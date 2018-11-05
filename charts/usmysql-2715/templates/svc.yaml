@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "mysql.fullname" . }}
+  labels:
+    app: {{ template "mysql.fullname" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+    deepinsights/plugin: 'mysql'
+  annotations:
+    prometheus.io/scrape: 'true'
+    prometheus.io/port: '9104'
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+  - name: mysql
+    port: {{ .Values.service.port }}
+    targetPort: mysql
+    {{- if .Values.service.nodePort }}
+    nodePort: {{ .Values.service.nodePort }}
+    {{- end }}
+{{- if .Values.mysql_exporter.enabled }}
+  - name: mysql-exporter
+    port: 9104
+    targetPort: mysql-exporter
+{{- end }}
+  selector:
+    app: {{ template "mysql.fullname" . }}
